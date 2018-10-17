@@ -3,6 +3,7 @@ package org.fnet.osbuilder.os.targets;
 import org.fnet.osbuilder.os.OperatingSystem;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
+import org.pmw.tinylog.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,12 +72,12 @@ public class TargetRunner {
 //	}
 
 	public TargetResult run(BuildTarget target) throws Exception {
-		System.out.println("Running target " + target.getClass().getSimpleName());
+		Logger.info("Running target " + target.getClass().getSimpleName());
 		return target.run(os, runAll(target.getDependencies()));
 	}
 
 	public TargetResult run(Class<? extends BuildTarget> target) throws Exception {
-		System.out.println("Running target " + target.getSimpleName());
+		Logger.info("Running target " + target.getSimpleName());
 		BuildTarget t = getByClass(target);
 		return t.run(os, runAll(t.getDependencies()));
 	}

@@ -6,6 +6,7 @@ import org.fnet.osbuilder.os.targets.TargetRunner;
 import org.fnet.osbuilder.os.targets.impl.HelpTarget;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
+import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
 
 import java.io.File;
@@ -17,7 +18,8 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		Configurator.defaultConfig()
 				.writer(new ConsoleWriter())
-				.level(Level.TRACE)
+				.formatPattern("[{class_name}] {level} - {message}")
+				.level(Level.INFO)
 				.activate();
 
 		String target;
@@ -33,7 +35,7 @@ public class Main {
 		TargetRunner runner = new TargetRunner();
 
 		if (!first.isPresent()) {
-			System.err.println("Unknown target " + target);
+			Logger.error("Unknown target " + target);
 			runner.run(HelpTarget.class);
 			System.exit(1);
 			return;
