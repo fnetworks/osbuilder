@@ -16,8 +16,12 @@ import java.util.*;
 public class OperatingSystem {
 
 	private static final String PROJECT_FILE_NAME = "os.yml";
+
+
 	private File loadSource, loadSourceDirectory;
 	private Toolchain toolchain;
+
+	private String id, name;
 	private String target;
 	private Map<String, String> components = new HashMap<>();
 
@@ -26,7 +30,9 @@ public class OperatingSystem {
 		this.loadSource = new File(loadSourceDirectory, PROJECT_FILE_NAME);
 	}
 
-	public OperatingSystem(String target) {
+	public OperatingSystem(String id, String target) {
+		this.id = id;
+		this.name = id;
 		this.target = target;
 		this.components = new HashMap<>();
 	}
@@ -41,6 +47,10 @@ public class OperatingSystem {
 			map = new Yaml().load(in);
 		}
 
+		this.id = (String) map.get("id");
+		if (id == null || id.isEmpty())
+			throw new NullPointerException("Name must be set");
+		this.name = (String) map.getOrDefault("name", id);
 		this.target = (String) map.getOrDefault("target", "i686-elf");
 		this.components = (Map<String, String>) map.get("components");
 	}
@@ -50,6 +60,8 @@ public class OperatingSystem {
 			throw new IllegalStateException("LoadSource can't be null");
 
 		Map<String, Object> map = new HashMap<>();
+		map.put("id", id);
+		map.put("name", name);
 		map.put("target", target);
 		map.put("components", components);
 		Files.write(loadSource.toPath(), new Yaml().dumpAsMap(map).getBytes());
@@ -123,5 +135,23 @@ public class OperatingSystem {
 
 	public void setTarget(String target) {
 		this.target = target;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		if (id == null)
+			throw new NullPointerException("id");
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }
