@@ -6,6 +6,9 @@ import org.fnet.osbuilder.Util;
 import org.fnet.osbuilder.os.OperatingSystem;
 import org.fnet.osbuilder.os.targets.BuildTarget;
 import org.fnet.osbuilder.os.targets.TargetResult;
+import org.fnet.osbuilder.toolchain.ComponentProvider;
+import org.fnet.osbuilder.toolchain.Toolchain;
+import org.fnet.osbuilder.toolchain.ToolchainComponent;
 import org.fnet.osbuilder.util.ConsoleInterface;
 import org.fnet.osbuilder.util.StringFormatter;
 import org.pmw.tinylog.Logger;
@@ -16,9 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @AutoService(BuildTarget.class)
 public class InitTarget extends BuildTarget {
@@ -31,6 +32,11 @@ public class InitTarget extends BuildTarget {
 		newOs.setId(console.ask("ID", true));
 		newOs.setName(console.ask("Name", newOs.getId()));
 		newOs.setTarget(console.ask("Target", "i686-elf"));
+
+		Logger.info("Adding default build components");
+		newOs.getComponents().put("binutils", Toolchain.getComponentProviderByName("binutils").getLatestVersion());
+		newOs.getComponents().put("gcc", Toolchain.getComponentProviderByName("gcc").getLatestVersion());
+		newOs.getComponents().put("grub", Toolchain.getComponentProviderByName("grub").getLatestVersion());
 
 		newOs.save();
 

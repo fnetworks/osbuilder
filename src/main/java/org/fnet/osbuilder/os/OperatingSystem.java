@@ -67,7 +67,7 @@ public class OperatingSystem {
 		Files.write(loadSource.toPath(), new Yaml().dumpAsMap(map).getBytes());
 	}
 
-	public void setupToolchain() throws IOException, InterruptedException {
+	public void setupToolchain() throws Exception {
 		Map<String, ComponentProvider> cpm = new HashMap<>();
 		for (ComponentProvider provider : ServiceLoader.load(ComponentProvider.class)) {
 			if (provider.isRequired() && !components.containsKey(provider.getName()))

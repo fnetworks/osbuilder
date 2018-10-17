@@ -2,15 +2,13 @@ package org.fnet.osbuilder.toolchain;
 
 import com.vdurmont.semver4j.Semver;
 
-import java.io.IOException;
-
 public interface ComponentProvider {
 
 	String getName();
 
 	ToolchainComponent provideComponent(String version);
 
-	default String getLatestVersion() throws IOException {
+	default String getLatestVersion() throws Exception {
 		return null;
 	}
 

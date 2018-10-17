@@ -10,6 +10,23 @@ import java.util.*;
 
 public class Toolchain {
 
+	private static final List<ComponentProvider> REGISTERED_COMPONENTS;
+
+	static {
+		List<ComponentProvider> list = new ArrayList<>();
+		ServiceLoader<ComponentProvider> loader = ServiceLoader.load(ComponentProvider.class);
+		loader.forEach(list::add);
+		REGISTERED_COMPONENTS = list;
+	}
+
+	public static List<ComponentProvider> getRegisteredComponentProviders() {
+		return REGISTERED_COMPONENTS;
+	}
+
+	public static ComponentProvider getComponentProviderByName(String name) {
+		return REGISTERED_COMPONENTS.stream().filter(e -> e.getName().equals(name)).findAny().orElse(null);
+	}
+
 	public static class ToolchainVersionLock {
 		private Map<String, String> versions;
 
