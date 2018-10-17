@@ -44,6 +44,6 @@ public class AssembleTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] { "assemble" };
+		return new String[]{"assemble"};
 	}
 }

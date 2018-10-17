@@ -54,6 +54,6 @@ public class ISOTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] { "iso" };
+		return new String[]{"iso"};
 	}
 }

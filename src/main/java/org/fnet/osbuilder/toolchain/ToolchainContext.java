@@ -11,16 +11,13 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
-import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ToolchainContext {
 
-//	private static final File TEMP_DIRECTORY = new File("temp/");
 	private static final Pattern DOWNLOAD_INDEX_REGEX = Pattern.compile("\"(?<url>[^\"]*)\":\\w?\"(?<file>[^\"]*)\"");
 
 	private final ProcessRunner runner;
@@ -68,7 +65,7 @@ public class ToolchainContext {
 		String[] split = url.getPath().split("/");
 		File outputFile = new File(toolchain.getTempDirectory(), System.currentTimeMillis() + "_" + split[split.length - 1]);
 		try (ReadableByteChannel in = Channels.newChannel(url.openStream());
-			 FileOutputStream outputStream = new FileOutputStream(outputFile)) {
+		     FileOutputStream outputStream = new FileOutputStream(outputFile)) {
 			outputStream.getChannel().transferFrom(in, 0, Long.MAX_VALUE);
 		}
 		try {

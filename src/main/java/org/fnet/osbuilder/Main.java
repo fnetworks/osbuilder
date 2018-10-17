@@ -4,14 +4,11 @@ import org.fnet.osbuilder.os.OperatingSystem;
 import org.fnet.osbuilder.os.targets.BuildTarget;
 import org.fnet.osbuilder.os.targets.TargetRunner;
 import org.fnet.osbuilder.os.targets.impl.HelpTarget;
-import org.fnet.osbuilder.os.targets.impl.ISOTarget;
-import org.fnet.osbuilder.os.targets.impl.KernelTarget;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
 import org.pmw.tinylog.writers.ConsoleWriter;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 

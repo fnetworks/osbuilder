@@ -2,7 +2,6 @@ package org.fnet.osbuilder.toolchain.versions;
 
 import org.fnet.osbuilder.toolchain.versions.DirectoryListingParser.RemoteFile;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;

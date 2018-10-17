@@ -44,6 +44,6 @@ public class KernelTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] { "kernel" };
+		return new String[]{"kernel"};
 	}
 }

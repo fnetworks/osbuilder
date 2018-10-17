@@ -45,6 +45,6 @@ public class CompileCPPTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] { "compile-cpp" };
+		return new String[]{"compile-cpp"};
 	}
 }

@@ -7,6 +7,7 @@ public interface Extractor extends Tool {
 
 	/**
 	 * Returns extensions that are supported by this extractor, e.g. "tar.gz", "zip"
+	 *
 	 * @return extensions supported by this extractor
 	 */
 	String[] getSupportedExtensions();

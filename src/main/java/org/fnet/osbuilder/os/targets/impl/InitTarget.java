@@ -28,7 +28,7 @@ public class InitTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] { "init", "create" };
+		return new String[]{"init", "create"};
 	}
 
 	@Override

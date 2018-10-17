@@ -45,6 +45,6 @@ public class CompileCTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] {"compile-c"};
+		return new String[]{"compile-c"};
 	}
 }

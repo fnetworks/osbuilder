@@ -13,7 +13,7 @@ import java.util.List;
 public class Tar implements Extractor {
 	@Override
 	public String[] getSupportedExtensions() {
-		return new String[] {
+		return new String[]{
 				"tar", "tar.gz", "tar.xz", "tar.bz2"
 		};
 	}
