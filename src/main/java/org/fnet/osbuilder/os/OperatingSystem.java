@@ -1,8 +1,8 @@
 package org.fnet.osbuilder.os;
 
-import org.fnet.osbuilder.toolchain.ComponentProvider;
+import com.vdurmont.semver4j.Semver;
+import com.vdurmont.semver4j.Semver.SemverType;
 import org.fnet.osbuilder.toolchain.Toolchain;
-import org.fnet.osbuilder.toolchain.ToolchainComponent;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -16,19 +16,25 @@ import java.util.*;
 public class OperatingSystem {
 
 	private static final String PROJECT_FILE_NAME = "os.yml";
-	private File loadSource, loadSourceDirectory;
+
+
+	private File loadSource, rootDirectory;
 	private Toolchain toolchain;
+
+	private String id, name;
 	private String target;
+
 	private Map<String, String> components = new HashMap<>();
 
 	public OperatingSystem(File file) {
-		this.loadSourceDirectory = file;
-		this.loadSource = new File(loadSourceDirectory, PROJECT_FILE_NAME);
+		this.rootDirectory = file;
+		this.loadSource = new File(rootDirectory, PROJECT_FILE_NAME);
 	}
 
-	public OperatingSystem(String target) {
+	public OperatingSystem(String id, String target) {
+		this.id = id;
+		this.name = id;
 		this.target = target;
-		this.components = new HashMap<>();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -41,6 +47,10 @@ public class OperatingSystem {
 			map = new Yaml().load(in);
 		}
 
+		this.id = (String) map.get("id");
+		if (id == null || id.isEmpty())
+			throw new NullPointerException("Name must be set");
+		this.name = (String) map.getOrDefault("name", id);
 		this.target = (String) map.getOrDefault("target", "i686-elf");
 		this.components = (Map<String, String>) map.get("components");
 	}
@@ -50,32 +60,31 @@ public class OperatingSystem {
 			throw new IllegalStateException("LoadSource can't be null");
 
 		Map<String, Object> map = new HashMap<>();
+		map.put("id", id);
+		map.put("name", name);
 		map.put("target", target);
 		map.put("components", components);
 		Files.write(loadSource.toPath(), new Yaml().dumpAsMap(map).getBytes());
 	}
 
-	public void setupToolchain() throws IOException, InterruptedException {
-		Map<String, ComponentProvider> cpm = new HashMap<>();
-		for (ComponentProvider provider : ServiceLoader.load(ComponentProvider.class)) {
-			if (provider.isRequired() && !components.containsKey(provider.getName()))
-				components.put(provider.getName(), provider.getLatestVersion());
-			cpm.put(provider.getName(), provider);
-		}
-
-		List<ToolchainComponent> components = new ArrayList<>(this.components.size());
-		for (String component : this.components.keySet())
-			components.add(cpm.get(component).provideComponent(this.components.get(component)));
-
-		Toolchain toolchain = new Toolchain(new File(loadSourceDirectory, "toolchain/" + target), target,
-				components.toArray(new ToolchainComponent[0]));
-		toolchain.create();
+	public void setupToolchain() throws Exception {
+		Toolchain toolchain = new Toolchain(target, new File(rootDirectory, "toolchain/" + target));
+		this.components.forEach((id, version) -> toolchain.addComponent(id, new Semver(version, SemverType.LOOSE)));
+		toolchain.build();
 		this.toolchain = toolchain;
+	}
+
+	public File getBuildDirectory() {
+		return new File(getRootDirectory(), "build/");
+	}
+
+	public File getTempDirectory() {
+		return new File(getBuildDirectory(), "tmp/");
 	}
 
 	@NotNull
 	public File getBinaryDirectory() {
-		return new File(loadSourceDirectory, "bin/");
+		return new File(getBuildDirectory(), "bin/");
 	}
 
 	public File getIntermediateBinaryDirectory() {
@@ -84,11 +93,11 @@ public class OperatingSystem {
 
 	@NotNull
 	public File getSourceDirectory() {
-		return new File(loadSourceDirectory, "src/");
+		return new File(getRootDirectory(), "src/");
 	}
 
 	public File getResourceDirectory() {
-		return new File(loadSourceDirectory, "res/");
+		return new File(getRootDirectory(), "res/");
 	}
 
 	public Toolchain getToolchain() {
@@ -108,20 +117,38 @@ public class OperatingSystem {
 	}
 
 	public void setLoadSource(File loadSource) {
-		this.loadSourceDirectory = loadSource.getParentFile();
+		this.rootDirectory = loadSource.getParentFile();
 		this.loadSource = loadSource;
 	}
 
-	public File getLoadSourceDirectory() {
-		return loadSourceDirectory;
+	public File getRootDirectory() {
+		return rootDirectory;
 	}
 
-	public void setLoadSourceDirectory(File loadSourceDirectory) {
-		this.loadSourceDirectory = loadSourceDirectory;
-		this.loadSource = new File(loadSourceDirectory, PROJECT_FILE_NAME);
+	public void setRootDirectory(File rootDirectory) {
+		this.rootDirectory = rootDirectory;
+		this.loadSource = new File(rootDirectory, PROJECT_FILE_NAME);
 	}
 
 	public void setTarget(String target) {
 		this.target = target;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		if (id == null)
+			throw new NullPointerException("id");
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }

@@ -1,45 +1,45 @@
 package org.fnet.osbuilder.toolchain.impl;
 
-import org.fnet.osbuilder.Util;
+import com.google.auto.service.AutoService;
+import com.vdurmont.semver4j.Semver;
+import org.fnet.osbuilder.Main;
+import org.fnet.osbuilder.ProcessRunner;
 import org.fnet.osbuilder.systemtools.Extractor;
 import org.fnet.osbuilder.systemtools.Tool;
+import org.fnet.osbuilder.toolchain.Toolchain;
 import org.fnet.osbuilder.toolchain.ToolchainComponent;
-import org.fnet.osbuilder.toolchain.ToolchainContext;
+import org.fnet.osbuilder.toolchain.repositories.Repositories;
+import org.fnet.osbuilder.util.Util;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
 
-public class BinutilsComponent implements ToolchainComponent {
+@AutoService(ToolchainComponent.class)
+public class BinutilsComponent extends ToolchainComponent {
 
-	private String version;
-
-	public BinutilsComponent(String version) {
-		this.version = version;
+	public BinutilsComponent() {
+		super("binutils", "Binutils");
 	}
 
 	@Override
-	public void build(ToolchainContext ctx) throws IOException, InterruptedException {
-		File binutilsTar = ctx.downloadTemp(new URL("https://ftp.gnu.org/gnu/binutils/binutils-"
-				+ version + ".tar.xz"));
-		File binutilsSourceDirectory = new File(ctx.getToolchain().getDirectory(), "binutils/src");
-		File binutilsBuildDirectory = new File(ctx.getToolchain().getDirectory(), "binutils/build");
-		Util.createDirectory(binutilsSourceDirectory);
-		Tool.getTool(Extractor.class,
-				e -> Arrays.asList(e.getSupportedExtensions()).contains("tar.xz"))
-				.extract(binutilsTar, binutilsSourceDirectory, true, 1);
-		Util.createDirectory(binutilsBuildDirectory);
-		ctx.getRunner().pushDirectory(binutilsBuildDirectory);
-		if (!new File(binutilsBuildDirectory, "Makefile").exists())
-			ctx.getRunner().run(new File(binutilsSourceDirectory, "configure"), "--target", ctx.getToolchain().getTarget(),
-					"--prefix", ctx.getToolchain().getTargetDirectory(), "--with-sysroot", "--disable-nls",
-					"--disable-werror");
-		ctx.getRunner().run("make", "--jobs", "4");
-		ctx.getRunner().run("make", "install", "--jobs", "2");
-	}
+	public void build(Semver version, Toolchain toolchain) throws Exception {
+		File binutilsTar = Main.getApplication().getCachedOrDownload(
+				Repositories.getRepositories().getArchiveURL(getArtifactID(), version));
+		File rootDirectory = new File(toolchain.getDirectory(), getArtifactID());
+		File binutilsSourceDirectory = new File(rootDirectory, "src");
+		File binutilsBuildDirectory = new File(rootDirectory, "build");
 
-	public String getVersion() {
-		return version;
+		Util.createDirectory(binutilsSourceDirectory);
+		Tool.getTool(Extractor.class, e -> e.supports(binutilsTar))
+				.extract(binutilsTar, binutilsSourceDirectory, true, 1);
+
+		ProcessRunner runner = new ProcessRunner();
+		Util.createDirectory(binutilsBuildDirectory);
+		runner.pushDirectory(binutilsBuildDirectory);
+		if (!new File(binutilsBuildDirectory, "Makefile").exists())
+			runner.run(new File(binutilsSourceDirectory, "configure"), "--target", toolchain.getTarget(),
+					"--prefix", toolchain.getTargetDirectory(), "--with-sysroot", "--disable-nls",
+					"--disable-werror");
+		runner.run("make", "--jobs", "4");
+		runner.run("make", "install", "--jobs", "2");
 	}
 }

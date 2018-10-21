@@ -1,42 +1,41 @@
 package org.fnet.osbuilder.toolchain.impl;
 
-import org.fnet.osbuilder.Util;
+import com.google.auto.service.AutoService;
+import com.vdurmont.semver4j.Semver;
+import org.fnet.osbuilder.Main;
+import org.fnet.osbuilder.ProcessRunner;
 import org.fnet.osbuilder.systemtools.Extractor;
 import org.fnet.osbuilder.systemtools.Tool;
+import org.fnet.osbuilder.toolchain.Toolchain;
 import org.fnet.osbuilder.toolchain.ToolchainComponent;
-import org.fnet.osbuilder.toolchain.ToolchainContext;
+import org.fnet.osbuilder.toolchain.repositories.Repositories;
+import org.fnet.osbuilder.util.Util;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
 
-public class GRUBComponent implements ToolchainComponent {
+@AutoService(ToolchainComponent.class)
+public class GRUBComponent extends ToolchainComponent {
 
-	private String version;
-
-	public GRUBComponent(String version) {
-		this.version = version;
+	public GRUBComponent() {
+		super("grub", "GRUB");
 	}
 
 	@Override
-	public void build(ToolchainContext ctx) throws IOException, InterruptedException {
-		File grubTar = ctx.downloadTemp(new URL("https://ftp.gnu.org/gnu/grub/grub-" + version + ".tar.gz"));
-		File grubSourceDirectory = new File(ctx.getToolchain().getDirectory(), "grub/src");
+	public void build(Semver version, Toolchain toolchain) throws Exception {
+		File grubTar = Main.getApplication().getCachedOrDownload(
+				Repositories.getRepositories().getArchiveURL(getArtifactID(), version));
+		File rootDirectory = new File(toolchain.getDirectory(), getArtifactID());
+		File grubSourceDirectory = new File(rootDirectory, "src");
+
 		Util.createDirectory(grubSourceDirectory);
-		Tool.getTool(Extractor.class,
-				e -> Arrays.asList(e.getSupportedExtensions()).contains("tar.xz"))
+		Tool.getTool(Extractor.class, e -> e.supports(grubTar))
 				.extract(grubTar, grubSourceDirectory, true, 1);
-		ctx.getRunner().pushDirectory(grubSourceDirectory);
-		ctx.getRunner().run(new File(grubSourceDirectory, "configure"), "--target", ctx.getToolchain().getTarget(),
-				"--prefix", ctx.getToolchain().getTargetDirectory(), "--disable-nls", "--disable-werror");
-		ctx.getRunner().run("make");
-		ctx.getRunner().run("make", "install");
 
-	}
-
-	@Override
-	public String getVersion() {
-		return version;
+		ProcessRunner runner = new ProcessRunner();
+		runner.pushDirectory(grubSourceDirectory);
+		runner.run(new File(grubSourceDirectory, "configure"), "--target", toolchain.getTarget(),
+				"--prefix", toolchain.getTargetDirectory(), "--disable-nls", "--disable-werror");
+		runner.run("make");
+		runner.run("make", "install");
 	}
 }

@@ -1,57 +1,52 @@
 package org.fnet.osbuilder.toolchain.impl;
 
-import org.fnet.osbuilder.Util;
+import com.google.auto.service.AutoService;
+import com.vdurmont.semver4j.Semver;
+import org.fnet.osbuilder.Main;
+import org.fnet.osbuilder.ProcessRunner;
 import org.fnet.osbuilder.systemtools.Extractor;
 import org.fnet.osbuilder.systemtools.Tool;
+import org.fnet.osbuilder.toolchain.Toolchain;
 import org.fnet.osbuilder.toolchain.ToolchainComponent;
-import org.fnet.osbuilder.toolchain.ToolchainContext;
+import org.fnet.osbuilder.toolchain.repositories.Repositories;
+import org.fnet.osbuilder.util.Util;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Set;
 
-public class GCCComponent implements ToolchainComponent {
+@AutoService(ToolchainComponent.class)
+public class GCCComponent extends ToolchainComponent {
 
-	private String version;
-
-	public GCCComponent(String version) {
-		this.version = version;
+	public GCCComponent() {
+		super("gcc", "GCC");
+		super.getDependencies().add(BinutilsComponent.class);
 	}
 
 	@Override
-	public void build(ToolchainContext ctx) throws IOException, InterruptedException {
-		File gccTar = ctx.downloadTemp(new URL("https://ftp.gnu.org/gnu/gcc/gcc-" + version + "/gcc-"
-				+ version + ".tar.xz"));
-		File gccSourceDirectory = new File(ctx.getToolchain().getDirectory(), "gcc/src");
-		File gccBuildDirectory = new File(ctx.getToolchain().getDirectory(), "gcc/build");
+	public void build(Semver version, Toolchain toolchain) throws Exception {
+		File gccTar = Main.getApplication().getCachedOrDownload(
+				Repositories.getRepositories().getArchiveURL(getArtifactID(), version));
+		File rootDirectory = new File(toolchain.getDirectory(), getArtifactID());
+		File gccSourceDirectory = new File(rootDirectory, "src");
+		File gccBuildDirectory = new File(rootDirectory, "build");
+
 		Util.createDirectory(gccSourceDirectory);
-		Tool.getTool(Extractor.class,
-				e -> Arrays.asList(e.getSupportedExtensions()).contains("tar.xz"))
+		Tool.getTool(Extractor.class, e -> e.supports(gccTar))
 				.extract(gccTar, gccSourceDirectory, true, 1);
-		ctx.getRunner().pushDirectory(gccSourceDirectory);
-		ctx.getRunner().run(new File(gccSourceDirectory, "contrib/download_prerequisites"));
-		ctx.getRunner().popDirectory();
+
+		ProcessRunner runner = new ProcessRunner();
+		runner.pushDirectory(gccSourceDirectory);
+		runner.run(new File(gccSourceDirectory, "contrib/download_prerequisites"));
+		runner.popDirectory();
 		Util.createDirectory(gccBuildDirectory);
-		ctx.getRunner().pushDirectory(gccBuildDirectory);
-		ctx.getRunner().exportPath(new File(ctx.getToolchain().getTargetDirectory(), "bin"));
+		runner.pushDirectory(gccBuildDirectory);
+		runner.exportPath(new File(toolchain.getTargetDirectory(), "bin"));
 		if (!new File(gccBuildDirectory, "Makefile").exists())
-			ctx.getRunner().run(new File(gccSourceDirectory, "configure"), "--target", ctx.getToolchain().getTarget(),
-					"--prefix", ctx.getToolchain().getTargetDirectory(), "--disable-nls",
+			runner.run(new File(gccSourceDirectory, "configure"), "--target", toolchain.getTarget(),
+					"--prefix", toolchain.getTargetDirectory(), "--disable-nls",
 					"--enable-languages=c,c++", "--without-headers");
-		ctx.getRunner().run("make", "all-gcc", "--jobs", "4");
-		ctx.getRunner().run("make", "all-target-libgcc", "--jobs", "2");
-		ctx.getRunner().run("make", "install-gcc", "--jobs", "2");
-		ctx.getRunner().run("make", "install-target-libgcc", "--jobs", "2");
-	}
-
-	public String getVersion() {
-		return version;
-	}
-
-	@Override
-	public Set<Class<? extends ToolchainComponent>> getDependencies() {
-		return Set.of(BinutilsComponent.class);
+		runner.run("make", "all-gcc", "--jobs", "4");
+		runner.run("make", "all-target-libgcc", "--jobs", "2");
+		runner.run("make", "install-gcc", "--jobs", "2");
+		runner.run("make", "install-target-libgcc", "--jobs", "2");
 	}
 }

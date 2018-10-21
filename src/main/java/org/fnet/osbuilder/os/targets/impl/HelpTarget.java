@@ -25,7 +25,7 @@ public class HelpTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] { "help", "?" };
+		return new String[]{"help", "?"};
 	}
 
 	@Override

@@ -4,24 +4,27 @@ import org.fnet.osbuilder.os.OperatingSystem;
 import org.fnet.osbuilder.os.targets.BuildTarget;
 import org.fnet.osbuilder.os.targets.TargetRunner;
 import org.fnet.osbuilder.os.targets.impl.HelpTarget;
-import org.fnet.osbuilder.os.targets.impl.ISOTarget;
-import org.fnet.osbuilder.os.targets.impl.KernelTarget;
 import org.pmw.tinylog.Configurator;
 import org.pmw.tinylog.Level;
+import org.pmw.tinylog.Logger;
 import org.pmw.tinylog.writers.ConsoleWriter;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
 public class Main {
 
+	private static Application application;
+
 	public static void main(String[] args) throws Exception {
 		Configurator.defaultConfig()
 				.writer(new ConsoleWriter())
-				.level(Level.TRACE)
+				.formatPattern("[{class_name}] {level} - {message}")
+				.level(Level.INFO)
 				.activate();
+
+		application = new Application(args);
 
 		String target;
 		if (args.length == 0)
@@ -36,7 +39,7 @@ public class Main {
 		TargetRunner runner = new TargetRunner();
 
 		if (!first.isPresent()) {
-			System.err.println("Unknown target " + target);
+			Logger.error("Unknown target " + target);
 			runner.run(HelpTarget.class);
 			System.exit(1);
 			return;
@@ -60,4 +63,7 @@ public class Main {
 			system.save();
 	}
 
+	public static Application getApplication() {
+		return application;
+	}
 }

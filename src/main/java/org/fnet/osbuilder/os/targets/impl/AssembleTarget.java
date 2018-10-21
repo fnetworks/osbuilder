@@ -2,7 +2,7 @@ package org.fnet.osbuilder.os.targets.impl;
 
 import com.google.auto.service.AutoService;
 import org.fnet.osbuilder.ProcessRunner;
-import org.fnet.osbuilder.Util;
+import org.fnet.osbuilder.util.Util;
 import org.fnet.osbuilder.os.OperatingSystem;
 import org.fnet.osbuilder.os.targets.BuildTarget;
 import org.fnet.osbuilder.os.targets.TargetResult;
@@ -44,6 +44,6 @@ public class AssembleTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] { "assemble" };
+		return new String[]{"assemble"};
 	}
 }

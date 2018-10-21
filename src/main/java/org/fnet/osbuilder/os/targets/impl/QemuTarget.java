@@ -41,6 +41,6 @@ public class QemuTarget extends BuildTarget {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] { "run", "qemu", "emulate" };
+		return new String[]{"run", "qemu", "emulate"};
 	}
 }
