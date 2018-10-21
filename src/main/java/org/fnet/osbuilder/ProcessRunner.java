@@ -18,7 +18,7 @@ public class ProcessRunner {
 
 	private File currentDirectory = null;
 	private List<File> directoryList = new ArrayList<>();
-	private ExitCodeChecker exitCodeFunction = e -> true;
+	private ExitCodeChecker exitCodeFunction;
 	private final List<String> customPathFiles = new ArrayList<>();
 	private final Map<String, String> customEnvironment = new HashMap<>();
 
@@ -31,6 +31,10 @@ public class ProcessRunner {
 			return "";
 		return o.toString();
 	};
+
+	public ProcessRunner() {
+		acceptExitCodes(0);
+	}
 
 	private String tryCanonicalize(File file) {
 		try {

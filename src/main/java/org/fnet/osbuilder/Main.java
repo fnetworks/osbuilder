@@ -15,12 +15,16 @@ import java.util.Optional;
 
 public class Main {
 
+	private static Application application;
+
 	public static void main(String[] args) throws Exception {
 		Configurator.defaultConfig()
 				.writer(new ConsoleWriter())
 				.formatPattern("[{class_name}] {level} - {message}")
 				.level(Level.INFO)
 				.activate();
+
+		application = new Application(args);
 
 		String target;
 		if (args.length == 0)
@@ -59,4 +63,7 @@ public class Main {
 			system.save();
 	}
 
+	public static Application getApplication() {
+		return application;
+	}
 }

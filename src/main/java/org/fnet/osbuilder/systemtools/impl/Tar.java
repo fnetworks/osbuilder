@@ -1,7 +1,7 @@
 package org.fnet.osbuilder.systemtools.impl;
 
 import com.google.auto.service.AutoService;
-import org.fnet.osbuilder.Util;
+import org.fnet.osbuilder.util.Util;
 import org.fnet.osbuilder.systemtools.Extractor;
 
 import java.io.File;

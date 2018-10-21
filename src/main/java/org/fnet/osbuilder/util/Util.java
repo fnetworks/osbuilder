@@ -1,4 +1,4 @@
-package org.fnet.osbuilder;
+package org.fnet.osbuilder.util;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -47,6 +47,8 @@ public class Util {
 
 	public static final File PROGRAM_DIRECTORY;
 
+	public static final File TEMP_DIRECTORY;
+
 	static {
 		try {
 			File progDir = new File(Util.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
@@ -56,6 +58,8 @@ public class Util {
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
+
+		TEMP_DIRECTORY = new File(PROGRAM_DIRECTORY, "temp");
 	}
 
 }
